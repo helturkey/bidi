@@ -1,6 +1,6 @@
 <?php
 
-namespace Hussein\BiDi;
+namespace Hussein\Bidirection;
 
 require 'Lib' . DIRECTORY_SEPARATOR . 'Bidi.class.php';
 
