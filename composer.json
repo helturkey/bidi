@@ -21,7 +21,7 @@
             "Hussein\\BiDi\\ArabicUtf8": "src/"
         },
         "psr-4": {
-            "Hussein\\BiDi\\ArabicUtf8\\": "src/",
+            "Hussein\\BiDi\\ArabicUtf8\\": "src/"
         }
     },
     "extra": {
