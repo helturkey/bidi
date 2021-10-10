@@ -18,7 +18,10 @@
     },
     "autoload": {
         "psr-4": {
-            "Hussein\\BiDi\\": "src/Hussein/BiDi/"
+            "Hussein\\": "src/"
+        },
+        "psr-0": {
+            "Hussein\\Bidirection\\": "src/"
         }
     },
     "extra": {
