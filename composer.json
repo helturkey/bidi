@@ -19,9 +19,6 @@
     "autoload": {
         "psr-4": {
             "Hussein\\": "src/"
-        },
-        "psr-0": {
-            "Hussein\\Bidirection\\": "src/"
         }
     },
     "extra": {
