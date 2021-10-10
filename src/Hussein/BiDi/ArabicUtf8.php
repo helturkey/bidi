@@ -2,28 +2,36 @@
 
 namespace Hussein\BiDi;
 
-require 'lib' . DIRECTORY_SEPARATOR . 'bidi.php';
+require 'Lib' . DIRECTORY_SEPARATOR . 'Bidi.php';
 
 
 class ArabicUtf8
 {
 
-    static public function arab_log2vis(array $text)
+    static public function arab_log2vis(array|string $text, $forcertl = false)
     {
-        $bidi = new bidi();
+        $bidi = new \Bidi();
 
-        $str = array();
+        if (\is_array($text)) {
+            $str = array();
+            foreach ($text as $line) {
+                $chars = $bidi->utf8Bidi($bidi->UTF8StringToArray($line), $forcertl);
+                $line = '';
+                foreach ($chars as $char) {
+                    $line .= $bidi->unichr($char);
+                }
 
-        foreach ($text as $line) {
-            $chars = $bidi->utf8Bidi($bidi->UTF8StringToArray($line), 'AL');
+                $str[] = $line;
+            }
+            return $str;
+        } elseif (\is_string($text)) {
+            $chars = $bidi->utf8Bidi($bidi->UTF8StringToArray($text), $forcertl);
             $line = '';
             foreach ($chars as $char) {
                 $line .= $bidi->unichr($char);
             }
 
-            $str[] = $line;
+            return $line;
         }
-
-        return implode("\n", $str);
     }
 }
