@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Hussein\\BiDi\\ArabicUtf8\\": "src/"
+            "Hussein\\BiDi\\": "src/Hussein/BiDi/"
         }
     },
     "extra": {
