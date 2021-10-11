@@ -133,7 +133,7 @@ class Bidi
      */
     public function utf8Bidi($ta, $forcertl = false)
     {
-        global $unicode, $unicode_mirror, $unicode_arlet, $laa_array, $diacritics;
+        global $unicode, $unicode_mirror, $unicode_arlet, $laa_array, $diacritics, $endedletter, $alfletter;
 
         require_once('unicode_data.php');
 
@@ -498,8 +498,8 @@ class Bidi
 
         // Arabic Shaping
         // Cursively connected scripts, such as Arabic or Syriac, require the selection of positional character shapes that depend on adjacent characters. Shaping is logically applied after the Bidirectional Algorithm is used and is limited to characters within the same directional run.
-        $endedletter = array(1569, 1570, 1571, 1572, 1573, 1575, 1577, 1583, 1584, 1585, 1586, 1608, 1688);
-        $alfletter = array(1570, 1571, 1573, 1575);
+//        $endedletter = array(1569, 1570, 1571, 1572, 1573, 1575, 1577, 1583, 1584, 1585, 1586, 1608, 1688);
+//        $alfletter = array(1570, 1571, 1573, 1575);
         $chardata2 = $chardata;
         $laaletter = false;
         $charAL = array();
@@ -557,7 +557,12 @@ class Bidi
                     ($prevchar['type'] == $thischar['type']) and
                     ($nextchar['type'] == $thischar['type']) and
                     ($nextchar['char'] != 1567)) {
-                    if (in_array($prevchar['char'], $endedletter)) {
+                    if (in_array($nextchar['char'], $endedletter) && $thischar['char'] === 1610) {
+                        // for example شيء
+                        // end
+                        $chardata2[$i]['char'] = $arabicarr[$thischar['char']][1];
+
+                    } else if (in_array($prevchar['char'], $endedletter)) {
                         if (isset($arabicarr[$thischar['char']][2])) {
                             // initial
                             $chardata2[$i]['char'] = $arabicarr[$thischar['char']][2];
