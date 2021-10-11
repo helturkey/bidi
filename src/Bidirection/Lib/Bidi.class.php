@@ -133,8 +133,9 @@ class Bidi
      */
     public function utf8Bidi($ta, $forcertl = false)
     {
-        // before we go, replace 160 CS 	NO-BREAK SPACE with 32 space to avoid لا from ل 160 ا
-        $ta = array_map(static fn(int $value): int => $value === 160 ? 32 : $value, $ta);
+        // before we go, replace 160 CS NO-BREAK SPACE with 32 space to avoid لا from ل 160 ا
+        // php > 7.4
+        $ta = array_map(fn(int $value) => $value === 160 ? 32 : $value, $ta);
 
         global $unicode, $unicode_mirror, $unicode_arlet, $laa_array, $diacritics, $endedletter, $alfletter, $punctuation;
 
