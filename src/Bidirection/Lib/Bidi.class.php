@@ -133,7 +133,10 @@ class Bidi
      */
     public function utf8Bidi($ta, $forcertl = false)
     {
-        global $unicode, $unicode_mirror, $unicode_arlet, $laa_array, $diacritics, $endedletter, $alfletter;
+        // before we go, replace 160 CS 	NO-BREAK SPACE with 32 space to avoid لا from ل 160 ا
+        $ta = array_map(static fn(int $value): int => $value === 160 ? 32 : $value, $ta);
+
+        global $unicode, $unicode_mirror, $unicode_arlet, $laa_array, $diacritics, $endedletter, $alfletter, $punctuation;
 
         require_once('unicode_data.php');
 
@@ -526,6 +529,7 @@ class Bidi
             } else {
                 $nextchar = false;
             }
+
             if ($unicode[$thischar['char']] == 'AL') {
                 $x = $thischar['x'];
                 if ($x > 0) {
@@ -551,17 +555,18 @@ class Bidi
                     $arabicarr = $unicode_arlet;
                     $laaletter = false;
                 }
+
                 if (($prevchar !== false) and ($nextchar !== false) and
                     (($unicode[$prevchar['char']] == 'AL') or ($unicode[$prevchar['char']] == 'NSM')) and
                     (($unicode[$nextchar['char']] == 'AL') or ($unicode[$nextchar['char']] == 'NSM')) and
                     ($prevchar['type'] == $thischar['type']) and
                     ($nextchar['type'] == $thischar['type']) and
                     ($nextchar['char'] != 1567)) {
-                    if (in_array($nextchar['char'], $endedletter) && $thischar['char'] === 1610) {
-                        // for example شيء
-                        // end
-                        $chardata2[$i]['char'] = $arabicarr[$thischar['char']][1];
 
+                    if (in_array($nextchar['char'], $punctuation) || ($nextchar['char'] === 1569 && $thischar['char'] === 1610)) {
+                        // end if next punctuations
+                        // for example شيء
+                        $chardata2[$i]['char'] = $arabicarr[$thischar['char']][1];
                     } else if (in_array($prevchar['char'], $endedletter)) {
                         if (isset($arabicarr[$thischar['char']][2])) {
                             // initial
@@ -588,9 +593,12 @@ class Bidi
                     // final
                     if (($i > 1) and ($thischar['char'] == 1607) and
                         ($chardata[$i - 1]['char'] == 1604) and
-                        ($chardata[$i - 2]['char'] == 1604)) {
+                        ($chardata[$i - 2]['char'] == 1604) && ($chardata[$i - 3]['char'] == 1575)) {
                         //Allah Word
                         // mark characters to delete with false
+                        // solve 2 ا alef in writing الله
+                        $chardata2[$i - 3]['char'] = false;
+
                         $chardata2[$i - 2]['char'] = false;
                         $chardata2[$i - 1]['char'] = false;
                         $chardata2[$i]['char'] = 65010;

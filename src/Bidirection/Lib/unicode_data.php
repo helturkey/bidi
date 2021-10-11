@@ -18347,3 +18347,11 @@ $endedletter = [
 ];
 
 $alfletter = [1570, 1571, 1573, 1575];
+
+$punctuation = [
+    1563, // ARABIC SEMICOLON	؛
+    1548, // ARABIC COMMA	،
+    65106, // SMALL FULL STOP	﹒
+    65108, // SMALL SEMICOLON	﹔
+    65281, // ！
+];

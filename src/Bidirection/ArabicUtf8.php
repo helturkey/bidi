@@ -8,7 +8,7 @@ require_once 'Lib' . DIRECTORY_SEPARATOR . 'Bidi.class.php';
 class ArabicUtf8
 {
 
-    static public function convert(array|string $text, $forcertl = false)
+    static public function convert(array|string $text, $forcertl = false): array|string
     {
         $bidi = new \Bidi();
 
