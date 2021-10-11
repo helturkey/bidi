@@ -563,8 +563,8 @@ class Bidi
                     ($prevchar['type'] == $thischar['type']) and
                     ($nextchar['type'] == $thischar['type']) and
                     ($nextchar['char'] != 1567)) {
-
-                    if (in_array($nextchar['char'], $punctuation) || ($nextchar['char'] === 1569 && $thischar['char'] === 1610)) {
+                    // 1569 hamza 1610 ي
+                    if ((in_array($nextchar['char'], $punctuation) && isset($arabicarr[$thischar['char']][1])) || ($nextchar['char'] === 1569 && $thischar['char'] === 1610)) {
                         // end if next punctuations
                         // for example شيء
                         $chardata2[$i]['char'] = $arabicarr[$thischar['char']][1];
