@@ -2,7 +2,7 @@
 
 namespace Hussein\Bidirection;
 
-require 'Lib' . DIRECTORY_SEPARATOR . 'Bidi.class.php';
+require_once 'Lib' . DIRECTORY_SEPARATOR . 'Bidi.class.php';
 
 
 class ArabicUtf8
