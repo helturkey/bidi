@@ -594,7 +594,7 @@ class Bidi
                     // final
                     if (($i > 1) and ($thischar['char'] == 1607) and
                         ($chardata[$i - 1]['char'] == 1604) and
-                        ($chardata[$i - 2]['char'] == 1604) && ($chardata[$i - 3]['char'] == 1575)) {
+                        ($chardata[$i - 2]['char'] == 1604) and (isset($chardata[$i - 3]['char']) && $chardata[$i - 3]['char'] == 1575)) {
                         //Allah Word
                         // mark characters to delete with false
                         // solve 2 ا alef in writing الله
