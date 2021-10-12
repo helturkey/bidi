@@ -4,11 +4,19 @@ namespace Hussein\Bidirection;
 
 require_once 'Lib' . DIRECTORY_SEPARATOR . 'Bidi.class.php';
 
-
 class ArabicUtf8
 {
-
-    public static function convert(array|string $text, $forcertl = false): array|string
+    /**
+     * @param array|string $text
+     * @param false|string $forcertl
+     *
+     *    L    Left-to-Right    LRM, most alphabetic, syllabic, Han ideographs, non-European or non-Arabic digits, ...
+     *    R    Right-to-Left    RLM, Hebrew alphabet, and related punctuation
+     *    AL   Right-to-Left Arabic    ALM, Arabic, Thaana, and Syriac alphabets, most punctuation specific to those scripts, ...
+     *
+     * @return array|string
+     */
+    public static function convert(array|string $text, bool|string $forcertl = false): array|string
     {
         $bidi = new \Bidi();
 
@@ -34,6 +42,14 @@ class ArabicUtf8
             return $line;
         }
     }
+
+    /**
+     * @param string $string
+     * @param int $width
+     * @param string $break
+     * @param bool $cut
+     * @return string
+     */
 
     public static function mb_wordwrap(string $string, int $width = 75, $break = "\n", bool $cut = false): string
     {

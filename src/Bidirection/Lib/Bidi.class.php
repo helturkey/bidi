@@ -3,11 +3,8 @@
 class Bidi
 {
     /**
-     * Returns the unicode caracter specified by UTF-8 code
-     * @param int $c UTF-8 code
-     * @return Returns the specified character.
-     * @author Miguel Perez, Nicola Asuni
-     * @since 2.3.000 (2008-03-05)
+     * @param $c
+     * @return string
      */
     public function unichr($c)
     {
@@ -29,10 +26,10 @@ class Bidi
     }
 
     /**
-     * Converts UTF-8 strings to codepoints array.<br>
-     * Invalid byte sequences will be replaced with 0xFFFD (replacement character)<br>
+     * Converts UTF-8 strings to codepoints array.
+     * Invalid byte sequences will be replaced with 0xFFFD (replacement character)
      * Based on: http://www.faqs.org/rfcs/rfc3629.html
-     * <pre>
+     *
      *      Char. number range  |        UTF-8 octet sequence
      *       (hexadecimal)    |              (binary)
      *    --------------------+-----------------------------------------------
@@ -55,13 +52,11 @@ class Bidi
      *                 %xF4 %x80-8F 2( UTF8-tail )
      *   UTF8-tail   = %x80-BF
      *   ---------------------------------------------------------------------
-     * </pre>
-     * @param string $str string to process.
-     * @return array containing codepoints (UTF-8 characters values)
-     * @author Nicola Asuni
-     * @since 1.53.0.TC005 (2005-01-05)
+     *
+     * @param string $str
+     * @return array
      */
-    public function UTF8StringToArray($str)
+    public function UTF8StringToArray(string $str): array
     {
         $unicode = array(); // array containing unicode values
         $bytes = array(); // array containing single character byte sequences
@@ -70,7 +65,6 @@ class Bidi
         $str .= ""; // force $str to be a string
         $length = strlen($str);
 
-//        for ($i = $length - 1; $i >= 0; $i--) {
         for ($i = 0; $i < $length; $i++) {
             $char = ord($str[$i]); // get one string character at time
             if (count($bytes) == 0) { // get starting octect
@@ -126,12 +120,10 @@ class Bidi
     /**
      * Reverse the RLT substrings using the Bidirectional Algorithm (http://unicode.org/reports/tr9/).
      * @param array $ta array of characters composing the string.
-     * @param bool $forcertl if 'R' forces RTL, if 'L' forces LTR
-     * @return string
-     * @author Nicola Asuni
-     * @since 2.4.000 (2008-03-06)
+     * @param false|string $forcertl 'R' forces RTL, 'L' forces LTR, or 'AL' for dynamic
+     * @return array
      */
-    public function utf8Bidi($ta, $forcertl = false)
+    public function utf8Bidi(array $ta, bool|string $forcertl = false): array
     {
         // before we go, replace 160 CS NO-BREAK SPACE with 32 space to avoid لا from ل 160 ا
         // php > 7.4
@@ -678,6 +670,5 @@ class Bidi
 
         return $ordarray;
     }
-
 }
 

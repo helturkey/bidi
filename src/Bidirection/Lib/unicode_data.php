@@ -1,88 +1,53 @@
 <?php
-//============================================================+
-// File name   : unicode_data.php
-// Begin       : 2008-01-01
-// Last Update : 2008-06-03
-// License     : GNU LGPL (http://www.gnu.org/copyleft/lesser.html)
-// 	----------------------------------------------------------------------------
-//  Copyright (C) 2002-2008  Nicola Asuni - Tecnick.com S.r.l.
-//
-// 	This program is free software: you can redistribute it and/or modify
-// 	it under the terms of the GNU Lesser General Public License as published by
-// 	the Free Software Foundation, either version 2.1 of the License, or
-// 	(at your option) any later version.
-//
-// 	This program is distributed in the hope that it will be useful,
-// 	but WITHOUT ANY WARRANTY; without even the implied warranty of
-// 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// 	GNU Lesser General Public License for more details.
-//
-// 	You should have received a copy of the GNU Lesser General Public License
-// 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-// 	See LICENSE.TXT file for more information.
-//  ----------------------------------------------------------------------------
-//
-// Description : Unicode Include file for TCPDF.
-//
-// Author: Nicola Asuni
-//
-// (c) Copyright:
-//               Nicola Asuni
-//               Tecnick.com s.r.l.
-//               Via Della Pace, 11
-//               09044 Quartucciu (CA)
-//               ITALY
-//               www.tecnick.com
-//               info@tecnick.com
-//============================================================+
-// THANKS TO
-// Efthimios Mavrogeorgiadis
-// Saleh AlMatrafe
 
 /**
- * Unicode Include file for TCPDF.
- * @author Nicola Asuni
- * @copyright 2004-2008 Nicola Asuni - Tecnick.com S.r.l (www.tecnick.com) Via Della Pace, 11 - 09044 - Quartucciu (CA) - ITALY - www.tecnick.com - info@tecnick.com
- * @package com.tecnick.tcpdf
- * @link http://www.tcpdf.org
- * @license http://www.gnu.org/copyleft/lesser.html LGPL
- * @since 2.1.000 (2008-01-08)
+ * (U+200E) LEFT-TO-RIGHT MARK
+ * Left-to-right zero-width character
  */
+const K_LRM = 8206;
 
 /**
- * Left-to-Right Mark
+ * (U+200F) RIGHT-TO-LEFT MARK
+ * Right-to-left zero-width non-Arabic character
  */
-define("K_LRM", 8206);
-/**
- * Right-to-Left Mark
- */
-define("K_RLM", 8207);
-/**
- * Left-to-Right Embedding
- */
-define("K_LRE", 8234);
-/**
- * Right-to-Left Embedding
- */
-define("K_RLE", 8235);
-/**
- * Pop Directional Format
- */
-define("K_PDF", 8236);
-/**
- * Left-to-Right Override
- */
-define("K_LRO", 8237);
-/**
- * Right-to-Left Override
- */
-define("K_RLO", 8238);
+const K_RLM = 8207;
 
-/*
+/**
+ * (U+202A) LEFT-TO-RIGHT EMBEDDING
+ * Treat the following text as embedded left-to-right
+ */
+const K_LRE = 8234;
+
+/**
+ * (U+202B) RIGHT-TO-LEFT EMBEDDING
+ * Treat the following text as embedded right-to-left
+ */
+const K_RLE = 8235;
+
+/**
+ * (U+202C) POP DIRECTIONAL FORMATTING
+ * End the scope of the last LRE, RLE, RLO, or LRO whose scope has not yet been terminated
+ */
+const K_PDF = 8236;
+
+/**
+ * (U+202D) for LEFT-TO-RIGHT OVERRIDE
+ * Force following characters to be treated as strong left-to-right characters
+ */
+const K_LRO = 8237;
+
+/**
+ * (U+202E) RIGHT-TO-LEFT OVERRIDE
+ * Force following characters to be treated as strong right-to-left characters
+ */
+const K_RLO = 8238;
+
+/**
  * Pattern to test RTL (Righ-To-Left) strings using regular expressions.
+ * (excluding Arabic)
  */
-define("K_RE_PATTERN_RTL", "/(
+
+const K_RE_PATTERN_RTL = "/(
           \xD6\xBE                                             # R
         | \xD7[\x80\x83\x86\x90-\xAA\xB0-\xB4]                 # R
         | \xDF[\x80-\xAA\xB4\xB5\xBA]                          # R
@@ -95,14 +60,13 @@ define("K_RE_PATTERN_RTL", "/(
         | \xF0\x90\xA9[\x80-\x87\x90-\x98]                     # R
         | \xE2\x80[\xAB\xAE]                                   # RLE & RLO
         | \xE2\x81\xA7                                         # RLI
-        )/x"
-);
+        )/x";
 
-/*
+/**
  * Pattern to test Arabic strings using regular expressions.
- * source: http://www.w3.org/International/questions/qa-forms-utf-8
+ * Ref: http://www.w3.org/International/questions/qa-forms-utf-8
  */
-define("K_RE_PATTERN_ARABIC", "/(
+const K_RE_PATTERN_ARABIC = "/(
           \xD8[\x80-\x83\x8B\x8D\x9B\x9E\x9F\xA1-\xBA]  # AL
         | \xD9[\x80-\x8A\xAD-\xAF\xB1-\xBF]             # AL
         | \xDA[\x80-\xBF]                               # AL
@@ -122,12 +86,39 @@ define("K_RE_PATTERN_ARABIC", "/(
         | \xEF\xBA[\x80-\xBF]                           # AL
         | \xEF\xBB[\x80-\xBC]                           # AL
         | \xD9[\xA0-\xA9\xAB\xAC]                       # AN
-        )/x");
+        )/x";
 
 /**
  * Array of unicode types
+ * https://www.unicode.org/reports/tr9/#Table_Bidirectional_Character_Types
+ *
+ * Category    Type    Description    General Scope
+ * Strong    L    Left-to-Right    LRM, most alphabetic, syllabic, Han ideographs, non-European or non-Arabic digits, ...
+ * R    Right-to-Left    RLM, Hebrew alphabet, and related punctuation
+ * AL    Right-to-Left Arabic    ALM, Arabic, Thaana, and Syriac alphabets, most punctuation specific to those scripts, ...
+ * Weak    EN    European Number    European digits, Eastern Arabic-Indic digits, ...
+ * ES    European Number Separator    PLUS SIGN, MINUS SIGN
+ * ET    European Number Terminator    DEGREE SIGN, currency symbols, ...
+ * AN    Arabic Number    Arabic-Indic digits, Arabic decimal and thousands separators, ...
+ * CS    Common Number Separator    COLON, COMMA, FULL STOP, NO-BREAK SPACE, ...
+ * NSM    Nonspacing Mark    Characters with the General_Category values: Mn (Nonspacing_Mark) and Me (Enclosing_Mark)
+ * BN    Boundary Neutral    Default ignorables, non-characters, and control characters, other than those explicitly given other types.
+ * Neutral    B    Paragraph Separator    PARAGRAPH SEPARATOR, appropriate Newline Functions, higher-level protocol paragraph determination
+ * S    Segment Separator    Tab
+ * WS    Whitespace    SPACE, FIGURE SPACE, LINE SEPARATOR, FORM FEED, General Punctuation spaces, ...
+ * ON    Other Neutrals    All other characters, including OBJECT REPLACEMENT CHARACTER
+ * Explicit Formatting    LRE    Left-to-Right Embedding    LRE
+ * LRO    Left-to-Right Override    LRO
+ * RLE    Right-to-Left Embedding    RLE
+ * RLO    Right-to-Left Override    RLO
+ * PDF    Pop Directional Format    PDF
+ * LRI    Left-to-Right Isolate    LRI
+ * RLI    Right-to-Left Isolate    RLI
+ * FSI    First Strong Isolate    FSI
+ * PDI    Pop Directional Isolate    PDI
+ *
  */
-$unicode = array(
+$unicode = [
     0 => 'BN',
     1 => 'BN',
     2 => 'BN',
@@ -17850,12 +17841,14 @@ $unicode = array(
     1048573 => 'L',
     1048576 => 'L',
     1114109 => 'L'
-);
+];
 
 /**
  * Mirror unicode characters.
- * For information on bidi mirroring, see UAX #9: Bidirectional Algorithm,
- * at http://www.unicode.org/unicode/reports/tr9/
+ * For information on bidi mirroring, see UAX #9:
+ * Bidirectional Algorithm, at http://www.unicode.org/unicode/reports/tr9/
+ *
+ * @var array
  */
 $unicode_mirror = [
     0x0028 => 0x0029,
@@ -18348,8 +18341,14 @@ $endedletter = [
     1688  // JEH (U+0698)
 ];
 
+/**
+ * @var array alef letter forms
+ */
 $alfletter = [1570, 1571, 1573, 1575];
 
+/**
+ * @var array of punctuations
+ */
 $punctuation = [
     1563, // ARABIC SEMICOLON	؛
     1548, // ARABIC COMMA	،
