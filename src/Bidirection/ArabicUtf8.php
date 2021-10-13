@@ -19,7 +19,6 @@ class ArabicUtf8
     public static function convert(array|string $text, bool|string $forcertl = false): array|string
     {
         $bidi = new \Bidi();
-
         if (\is_array($text)) {
             $str = array();
             foreach ($text as $line) {

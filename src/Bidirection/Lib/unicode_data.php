@@ -18355,4 +18355,9 @@ $punctuation = [
     65106, // SMALL FULL STOP	﹒
     65108, // SMALL SEMICOLON	﹔
     65281, // ！
+    1567,   // question mark ؟
+    46, // full stop .
+    1748, // Arabic Full Stop
+    1770, // Arabic Empty Centre Low Stop
+    183, // Middle Dot Midpoint , georgian comma , greek middle dot, dot symbol
 ];

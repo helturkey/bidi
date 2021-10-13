@@ -127,7 +127,8 @@ class Bidi
     {
         // before we go, replace 160 CS NO-BREAK SPACE with 32 space to avoid لا from ل 160 ا
         // php > 7.4
-        $ta = array_map(fn(int $value) => $value === 160 ? 32 : $value, $ta);
+        // $ta = array_map(fn(int $value) => $value === 160 ? 32 : $value, $ta);
+        // solved by passing CS to Arabic
 
         global $unicode, $unicode_mirror, $unicode_arlet, $laa_array, $diacritics, $endedletter, $alfletter, $punctuation;
 
@@ -501,7 +502,7 @@ class Bidi
         $charAL = array();
         $x = 0;
         for ($i = 0; $i < $numchars; $i++) {
-            if (($unicode[$chardata[$i]['char']] == 'AL') or ($unicode[$chardata[$i]['char']] == 'WS')) {
+            if (($unicode[$chardata[$i]['char']] == 'AL') or ($unicode[$chardata[$i]['char']] == 'WS') || ($unicode[$chardata[$i]['char']] == 'CS')) {
                 $charAL[$x] = $chardata[$i];
                 $charAL[$x]['i'] = $i;
                 $chardata[$i]['x'] = $x;
@@ -555,8 +556,13 @@ class Bidi
                     ($prevchar['type'] == $thischar['type']) and
                     ($nextchar['type'] == $thischar['type']) and
                     ($nextchar['char'] != 1567)) {
-                    // 1569 hamza 1610 ي
-                    if ((in_array($nextchar['char'], $punctuation) && isset($arabicarr[$thischar['char']][1])) || ($nextchar['char'] === 1569 && $thischar['char'] === 1610)) {
+
+                    if ((in_array($prevchar['char'], $punctuation) && isset($arabicarr[$thischar['char']][2]))) {
+                        // solve handling charackter with previous punctuation as a middle charackter
+                        // should handel as end char. if isset
+                        $chardata2[$i]['char'] = $arabicarr[$thischar['char']][2];
+                    } else if ((in_array($nextchar['char'], $punctuation) && isset($arabicarr[$thischar['char']][1])) || ($nextchar['char'] === 1569 && $thischar['char'] === 1610)) {
+                        // 1569 hamza 1610 ي
                         // end if next punctuations
                         // for example شيء
                         $chardata2[$i]['char'] = $arabicarr[$thischar['char']][1];
