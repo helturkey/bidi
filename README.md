@@ -1,6 +1,6 @@
 # Arbic bidirection php package
 
-Arbic bidirection is the best and most accurate php package handling Arabic texts, now you can write text on images easy.
+Arabic bidirection is the best and most accurate php package handling Arabic texts, now you can write text on images easy.
 
 ## Installation
 
