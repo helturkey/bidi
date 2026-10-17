@@ -68,8 +68,11 @@ final class UnicodeBidiEngine implements BidiEngine
         return Unicode::fromCodePoints($points);
     }
 
-    /** @param list<int> $points @return array{list<int>,list<int>,list<int>,int} */
-    private function paragraph(array $points, Direction $requested): array
+    /**
+     * @param list<int> $points
+     * @return array{list<int>, list<int>, list<int>, int}
+     */
+    private function paragraph(array $points, Direction $requested, bool $shapeArabic): array
     {
         $base = $requested === Direction::Ltr ? 0 : ($requested === Direction::Rtl ? 1 : self::firstStrong($points));
         $types = array_map(self::type(...), $points);
