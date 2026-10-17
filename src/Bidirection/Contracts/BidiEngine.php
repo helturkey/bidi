@@ -22,8 +22,8 @@ interface BidiEngine
     ): BidiAnalysis;
 
     /**
-     * @param list<int> $codePoints
-     * @param list<int> $levels
+     * @param array<array-key, mixed> $codePoints
+     * @param array<array-key, mixed> $levels
      */
     public function reorderLine(array $codePoints, array $levels, int $paragraphLevel): string;
 }

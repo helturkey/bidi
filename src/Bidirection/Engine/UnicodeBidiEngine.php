@@ -48,8 +48,8 @@ final class UnicodeBidiEngine implements BidiEngine
     }
 
     /**
-     * @param list<int> $codePoints
-     * @param list<int> $levels
+     * @param array<array-key, mixed> $codePoints
+     * @param array<array-key, mixed> $levels
      */
     public function reorderLine(array $codePoints, array $levels, int $paragraphLevel): string
     {
@@ -61,20 +61,26 @@ final class UnicodeBidiEngine implements BidiEngine
             throw new InvalidArgumentException('Paragraph level must be between 0 and 125.');
         }
 
+        $validatedCodePoints = [];
         foreach ($codePoints as $codePoint) {
             if (!is_int($codePoint) || $codePoint < 0 || $codePoint > 0x10FFFF
                 || ($codePoint >= 0xD800 && $codePoint <= 0xDFFF)) {
                 throw new InvalidArgumentException('Every code point must be a Unicode scalar value.');
             }
+
+            $validatedCodePoints[] = $codePoint;
         }
 
+        $validatedLevels = [];
         foreach ($levels as $level) {
             if (!is_int($level) || $level < 0 || $level > 125) {
                 throw new InvalidArgumentException('Every embedding level must be between 0 and 125.');
             }
+
+            $validatedLevels[] = $level;
         }
 
-        $visual = UnicodeBidi::reorderLine($codePoints, $levels, $paragraphLevel);
+        $visual = UnicodeBidi::reorderLine($validatedCodePoints, $validatedLevels, $paragraphLevel);
         $convert = new Convert();
 
         return implode('', $convert->ordArrToChrArr($visual));
