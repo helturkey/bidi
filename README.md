@@ -1,178 +1,118 @@
 # Arabic BiDi for PHP
 
-**Version:** `1.0.x` (the release version is supplied by the Git tag)
+A PHP library for converting logical Arabic and mixed-direction text into visual order for renderers that do not implement the Unicode Bidirectional Algorithm (BiDi) themselves.
 
-A PHP library for preparing Arabic and mixed-direction text for renderers that **do not implement the Unicode Bidirectional Algorithm (BiDi)** themselves.
+مكتبة PHP لتحويل النصوص العربية والمختلطة بين العربية والإنجليزية والأرقام إلى الترتيب المرئي للأنظمة التي لا تنفّذ خوارزمية Unicode BiDi بنفسها.
 
-مكتبة PHP لمعالجة النصوص العربية والنصوص المختلطة التي تحتوي على العربية والإنجليزية والأرقام، للأنظمة التي **لا تدعم خوارزمية Unicode BiDi** داخليًا.
+## Important / تنبيه مهم
 
-> **Important / تنبيه:** Browsers, HTML, and most modern text-rendering engines already handle BiDi. Do not call `Bidi::toVisual()` before displaying text in a browser; it may reorder the text twice.
->
-> المتصفحات وHTML ومعظم محركات عرض النصوص الحديثة تدعم الاتجاهين تلقائيًا. لا تستخدم `Bidi::toVisual()` قبل عرض النص في المتصفح حتى لا يُعاد ترتيب النص مرتين.
+Browsers, HTML and modern text engines already implement bidirectional rendering. Do not call `Bidi::toVisual()` before displaying text in a browser, or it may be reordered twice.
+
+المتصفحات وHTML ومحركات عرض النصوص الحديثة تدعم الاتجاهين تلقائيًا. لا تستخدم `Bidi::toVisual()` قبل عرض النص في المتصفح حتى لا يُعاد ترتيبه مرتين.
 
 ## Features / المميزات
 
-- Converts logical text to visual order for legacy renderers. — تحويل النص إلى الترتيب المرئي للأنظمة القديمة.
-- Supports a string or an array of strings. — يدعم نصًا واحدًا أو مصفوفة من النصوص.
-- Provides Unicode grapheme-aware line wrapping. — يوفّر تقسيم الأسطر مع مراعاة المحارف المركبة.
-- Validates UTF-8 in the public conversion API. — يتحقق من صحة UTF-8 في واجهة التحويل العامة.
-- Uses a modular, namespaced PHP architecture. — يعتمد بنية PHP مقسّمة إلى وحدات ومساحات أسماء.
+- Unicode Bidirectional Algorithm processing and Arabic shaping are delegated to the maintained `tecnickcom/tc-lib-unicode` library.
+- Explicit paragraph direction: auto, left-to-right, or right-to-left.
+- Optional Arabic contextual shaping for legacy renderers.
+- Safe UTF-8 validation at the public API boundary.
+- Grapheme-aware wrapping for text that needs a character-count limit.
+- Namespaced, modular PHP API; the old `ArabicUtf8` compatibility API and bundled legacy algorithm have been removed.
 
 ## Requirements / المتطلبات
 
-- PHP 8.0 or later. — PHP 8.0 أو أحدث.
+- PHP 8.2 or later.
 - Composer.
-- Valid UTF-8 input for `Bidi::toVisual()`. — يجب أن يكون الإدخال صالحًا بترميز UTF-8 عند استخدام `Bidi::toVisual()`.
+- The `mbstring` PHP extension (required by the Unicode engine).
 
 ## Installation / التثبيت
 
-```bash
-composer require helturkey/bidi:^1.0
-```
+After the first stable tag is published:
+
+    composer require helturkey/bidi:^1.0
 
 ## Quick start / البدء السريع
 
-### English example
+    <?php
 
-Use visual conversion only when the destination renderer needs visual-order text, such as a legacy image or PDF drawing API that does not support BiDi itself.
+    require __DIR__ . '/vendor/autoload.php';
 
-```php
-<?php
+    use Hussein\Bidirection\Bidi;
+    use Hussein\Bidirection\Direction;
+    use Hussein\Bidirection\TextLayout;
 
-require __DIR__ . '/vendor/autoload.php';
+    $logical = 'Price: 125.50 USD — السعر';
 
-use Hussein\Bidirection\Bidi;
-use Hussein\Bidirection\TextLayout;
+    // Only for a renderer that does not implement BiDi.
+    $visual = Bidi::toVisual($logical);
 
-$text = 'Price: 125.50 USD — السعر';
-$visualText = Bidi::toVisual($text);
+    // Force paragraph direction when the target needs it.
+    $rtl = Bidi::toVisual('نص عربي', Direction::Rtl);
+    $ltr = Bidi::toVisual('English text', Direction::Ltr);
 
-$wrappedText = TextLayout::wrap(
-    "First line of text\nSecond line of text",
-    width: 20,
-    break: "\n",
-    cut: false,
-);
+    // This wraps logical text; it does not itself reorder BiDi text.
+    $wrapped = TextLayout::wrap($logical, width: 24);
 
-echo $visualText;
-echo $wrappedText;
-```
+    echo $visual;
 
-### مثال باللغة العربية
+## API / الواجهة العامة
 
-استخدم التحويل المرئي فقط إذا كانت وجهة العرض لا تدعم BiDi بنفسها، مثل بعض مكتبات الرسم على الصور أو واجهات PDF القديمة.
+### `Bidi::toVisual(string|array $text, Direction|string $direction = Direction::Auto, bool $shapeArabic = true): string|array`
 
-```php
-<?php
+Converts a string or a list of independent lines to visual order. Array entries must be strings; results are returned as a numerically indexed list. Recognized direction values are `auto`, `L`/`LTR`, and `R`/`RTL`.
 
-require __DIR__ . '/vendor/autoload.php';
+تحوّل نصًا واحدًا أو قائمة من الأسطر المستقلة إلى الترتيب المرئي. يجب أن تكون عناصر المصفوفة نصوصًا، وتُعاد النتائج في قائمة رقمية الفهارس. القيم المقبولة للاتجاه هي `auto` و`L`/`LTR` و`R`/`RTL`.
 
-use Hussein\Bidirection\Bidi;
-use Hussein\Bidirection\TextLayout;
+    $visual = Bidi::toVisual('السعر 125 جنيهًا — Price');
+    $visualLines = Bidi::toVisual([
+        'السطر الأول',
+        'English line',
+        'السعر 125 جنيهًا',
+    ]);
+    $unshaped = Bidi::toVisual('سلام', Direction::Rtl, shapeArabic: false);
 
-$text = 'السعر: 125.50 جنيه — Price';
-$visualText = Bidi::toVisual($text);
+When a paragraph wraps into display lines, wrapping and BiDi processing are not interchangeable. This package's TextLayout utility wraps logical text only; it does not calculate resolved embedding levels for each line. Array input treats each item as an independent paragraph, not as line fragments of a single resolved paragraph.
 
-$wrappedText = TextLayout::wrap(
-    "السطر الأول من النص\nالسطر الثاني من النص",
-    width: 20,
-    break: "\n",
-    cut: false,
-);
+عند التفاف الفقرة إلى أسطر للعرض، لا يمكن اعتبار تقسيم الأسطر ومعالجة BiDi عمليتين متبادلتين. أداة TextLayout تقسّم النص المنطقي فقط ولا تحسب مستويات الاتجاه المحسومة لكل سطر. تُعامل عناصر المصفوفة كفقرات مستقلة، وليس كأسطر مقتطعة من فقرة واحدة.
 
-echo $visualText;
-echo $wrappedText;
-```
+### `TextLayout::wrap(string $text, int $width = 75, string $break = "\n", bool $cut = false): string`
 
-The exact visual result depends on the text and renderer. Test mixed Arabic/Latin text, numbers, punctuation, and brackets in your actual output environment.
+Wraps text based on Unicode grapheme clusters, not bytes or pixels. Existing paragraph breaks are retained and CRLF/CR are normalized to LF.
 
-تعتمد النتيجة المرئية الدقيقة على النص ومحرك العرض. اختبر النصوص المختلطة والأرقام وعلامات الترقيم والأقواس في بيئة العرض الفعلية لديك.
+- `width` must be greater than zero.
+- `break` must not be empty.
+- With `cut: false`, an unbreakable word remains intact when no whitespace exists.
+- Invalid UTF-8 and invalid arguments raise `InvalidArgumentException`.
 
-## API reference / شرح الواجهة
+تقسّم النص اعتمادًا على وحدات المحارف المركبة، وليس البايتات أو البكسلات. تُحافظ على فواصل الفقرات الحالية ويُوحّد CRLF وCR إلى LF.
 
-### `Bidi::toVisual(string|array $text, bool|string $forceRtl = false): string|array`
+## Unicode algorithm and limitations
 
-Converts one string or an array of strings to visual order.
+The algorithm is provided by `tecnickcom/tc-lib-unicode` version 3.0.9 or a compatible stable 3.x release. That project documents its BiDi engine as verified against the official `BidiTest.txt` and `BidiCharacterTest.txt` suites. The Unicode property data comes from `tecnickcom/tc-lib-unicode-data`; version 3.0.9 identifies Unicode Character Database 17.0.0.
 
-تحوّل نصًا واحدًا أو مصفوفة نصوص إلى الترتيب المرئي.
+This package no longer maintains its own hand-written BiDi algorithm or generated Unicode tables. See [the upstream algorithm](https://github.com/tecnickcom/tc-lib-unicode) and [UAX #9](https://www.unicode.org/reports/tr9/) for algorithm scope.
 
-```php
-use Hussein\Bidirection\Bidi;
+Important limitations inherited from the selected stable engine:
 
-// Single string / نص واحد
-$visual = Bidi::toVisual('مرحبا بالعالم');
+- Rule L3 (combining-mark display behavior) is not implemented by the upstream engine.
+- Contextual shaping is provided for Arabic, not every cursive script (such as Syriac, N'Ko, Mandaic and Adlam).
+- Paragraph wrapping and visual ordering must be coordinated by the host renderer. The TextLayout helper is not a full Unicode line-breaking engine.
+- Visual-order text is intended for legacy output only; keep logical text in storage and use native BiDi rendering whenever possible.
 
-// Array of strings / مصفوفة نصوص
-$visualLines = Bidi::toVisual([
-    'السطر الأول',
-    'English line',
-    'السعر 125 جنيهًا',
-]);
-
-// Optional direction override / تحديد الاتجاه اختياريًا
-$rtl = Bidi::toVisual('نص عربي', 'R');
-$ltr = Bidi::toVisual('English text', 'L');
-```
-
-The default `false` lets the bundled algorithm determine paragraph direction. `'R'` and `'L'` force right-to-left and left-to-right base direction, respectively.
-
-القيمة الافتراضية `false` تترك للخوارزمية تحديد اتجاه الفقرة. ويمكن استخدام `'R'` لفرض الاتجاه من اليمين إلى اليسار أو `'L'` لفرض الاتجاه من اليسار إلى اليمين.
-
-### `TextLayout::wrap(string $text, int $width = 75, string $break = "\\n", bool $cut = false): string`
-
-Wraps text based on Unicode grapheme clusters, not bytes. This is useful when a renderer accepts a character-count limit but does not provide its own wrapping.
-
-تقسّم النص إلى أسطر اعتمادًا على وحدات المحارف المركبة (grapheme clusters)، وليس على عدد البايتات. وهي مفيدة عندما يفرض محرك العرض حدًا لعدد المحارف ولا يوفّر تقسيمًا للأسطر.
-
-```php
-use Hussein\Bidirection\TextLayout;
-
-// Prefer breaking at spaces / يفضّل الفصل عند المسافات
-echo TextLayout::wrap('A short English sentence for wrapping.', 12);
-
-// Cut long words if needed / السماح بتقسيم الكلمات الطويلة
-echo TextLayout::wrap('مرحبابكمجميعا', 5, "\n", true);
-
-// Use a custom separator / استخدام فاصل مخصص
-echo TextLayout::wrap('one two three four', 7, ' | ', false);
-```
-
-- `width` must be greater than zero. — يجب أن يكون `width` أكبر من صفر.
-- `break` must not be empty. — يجب ألا يكون `break` فارغًا.
-- With `cut: false`, long words remain intact when no suitable whitespace is found. — عند `cut: false` تبقى الكلمة الطويلة دون تقسيم إذا لم توجد مسافة مناسبة.
-- Width is measured in grapheme clusters, not pixels or terminal columns. — يُحسب العرض بوحدات المحارف المركبة، وليس بالبكسل أو أعمدة الطرفية.
-- Invalid UTF-8 or invalid arguments raise `InvalidArgumentException`. — تؤدي البيانات غير الصالحة أو الوسائط غير الصحيحة إلى رمي `InvalidArgumentException`.
-
-## Project structure / بنية المشروع
-
-- `Bidi`: public logical-to-visual conversion API. — واجهة التحويل العامة.
-- `Contracts/BidiEngine`: contract for alternate engines. — عقد واجهة لمحركات بديلة.
-- `Engine/LegacyBidiEngine`: adapter around the current algorithm. — محوّل إلى الخوارزمية الحالية.
-- `Engine/Legacy/BidiAlgorithm`: core bidirectional processing. — المعالجة الأساسية للاتجاهين.
-- `Engine/Legacy/ArabicShaper`: Arabic contextual presentation forms. — تشكيل الحروف العربية وفق السياق.
-- `Engine/Legacy/VisualOrder`: visual reordering and mirroring. — إعادة الترتيب المرئي وعكس الرموز المناسبة.
-- `Data/UnicodeData` and `Data/UnicodeTables`: cached Unicode tables. — جداول Unicode ووسيلة الوصول المخزّنة مؤقتًا.
-- `TextLayout`: Unicode-aware line wrapping. — تقسيم الأسطر مع مراعاة Unicode.
-
-The old `ArabicUtf8` compatibility API has been removed. Use `Bidi::toVisual()` and `TextLayout::wrap()` instead.
-
-تم حذف واجهة التوافق القديمة `ArabicUtf8`. استخدم `Bidi::toVisual()` و`TextLayout::wrap()` بدلًا منها.
+For production systems, test the actual output path with mixed Arabic/Latin runs, URLs, currency and decimal numbers, paired brackets, explicit isolate controls, combining marks, and paragraph separators.
 
 ## Development / التطوير
 
-```bash
-composer install
-composer validate --strict
-composer test
-composer analyse
-```
+    composer install
+    composer validate --strict
+    composer test
+    composer analyse
+    composer audit
 
-## Limitations / حدود الاستخدام
+## Licensing
 
-- Do not visually reorder text for HTML/browser output. — لا تعِد ترتيب النص المرئي عند إرساله إلى HTML أو المتصفح.
-- Grapheme count does not equal rendered pixel width. Use font metrics for precise image/PDF layout. — عدد المحارف المركبة لا يساوي عرض النص بالبكسل؛ استخدم مقاييس الخط عند الحاجة إلى دقة في الصور وPDF.
-- The bundled algorithm has not yet been certified against the complete Unicode BiDi conformance suite. Test your target cases before relying on every script and control character. — لم تُعتمد الخوارزمية بعد باختبارات المطابقة الكاملة لمعيار Unicode BiDi؛ اختبر الحالات المطلوبة قبل الاعتماد عليها مع جميع اللغات ومحارف التحكم.
+This package's own source is MIT-licensed. The `tecnickcom/tc-lib-unicode` runtime dependency is LGPL-3.0-or-later and is installed separately by Composer. Distribution of applications using that dependency must comply with its license and applicable notice requirements; review the dependency's LICENSE file and the terms relevant to your distribution.
 
-## License / الترخيص
+## License
 
-MIT.
+MIT. See LICENSE for this package's own source.

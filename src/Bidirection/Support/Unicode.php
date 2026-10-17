@@ -6,6 +6,9 @@ namespace Hussein\Bidirection\Support;
 
 use InvalidArgumentException;
 
+/**
+ * UTF-8 validation and grapheme segmentation helpers.
+ */
 final class Unicode
 {
     private function __construct()
@@ -20,7 +23,7 @@ final class Unicode
     }
 
     /**
-     * Split a UTF-8 string into grapheme clusters when PCRE supports \\X.
+     * Split UTF-8 text into extended grapheme clusters.
      *
      * @return list<string>
      */
@@ -32,7 +35,7 @@ final class Unicode
             return [];
         }
 
-        $matched = preg_match_all('/\\X/u', $text, $matches);
+        $matched = preg_match_all('/\X/u', $text, $matches);
         if ($matched === false) {
             throw new InvalidArgumentException('Unable to segment the UTF-8 string.');
         }

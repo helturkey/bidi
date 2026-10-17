@@ -5,26 +5,51 @@ declare(strict_types=1);
 namespace Hussein\Bidirection\Tests;
 
 use Hussein\Bidirection\Bidi;
-use Hussein\Bidirection\Data\UnicodeData;
+use Hussein\Bidirection\Direction;
 use PHPUnit\Framework\TestCase;
 
 final class BidiTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Bidi::useEngine(null);
-    }
-
-    public function testAsciiTextCanBeConverted(): void
+    public function testAsciiTextIsUnchanged(): void
     {
         self::assertSame('hello world', Bidi::toVisual('hello world'));
     }
 
-    public function testArrayInputReturnsArray(): void
+    public function testMixedLtrAndHebrewTextIsReordered(): void
     {
-        $result = Bidi::toVisual(['hello', 'world']);
+        self::assertSame('abc גבא', Bidi::toVisual('abc אבג', Direction::Ltr, false));
+    }
 
-        self::assertSame(['hello', 'world'], $result);
+    public function testArabicShapingCanBeDisabled(): void
+    {
+        $plain = Bidi::toVisual('سلام', Direction::Rtl, false);
+        $shaped = Bidi::toVisual('سلام', Direction::Rtl, true);
+
+        self::assertNotSame($plain, $shaped);
+        self::assertNotSame('', $shaped);
+    }
+
+    public function testIsolatesAreAccepted(): void
+    {
+        $result = Bidi::toVisual('abc ' . "\u{2067}" . 'אבג' . "\u{2069}", Direction::Ltr, false);
+
+        self::assertIsString($result);
+        self::assertNotSame('', $result);
+    }
+
+    public function testBracketsAndNumbersDoNotBreakMixedText(): void
+    {
+        $result = Bidi::toVisual('abc (123) אבג', Direction::Ltr, false);
+
+        self::assertStringContainsString('123', $result);
+        self::assertSame(1, preg_match('//u', $result));
+    }
+
+    public function testArrayInputReturnsListAndConvertsEachLine(): void
+    {
+        $result = Bidi::toVisual(['hello', 'אבג'], Direction::Auto, false);
+
+        self::assertSame(['hello', 'גבא'], $result);
     }
 
     public function testInvalidUtf8IsRejected(): void
@@ -34,14 +59,22 @@ final class BidiTest extends TestCase
         Bidi::toVisual("\xC3\x28");
     }
 
-    public function testUnicodeTablesAreLoadedThroughNamespacedProvider(): void
+    public function testMaximumUnicodeScalarIsAccepted(): void
     {
-        $tables = UnicodeData::tables();
+        self::assertSame("\u{10FFFF}", Bidi::toVisual("\u{10FFFF}", Direction::Auto, false));
+    }
 
-        self::assertArrayHasKey('bidiClass', $tables);
-        self::assertArrayHasKey('mirrored', $tables);
-        self::assertArrayHasKey('arabicForms', $tables);
-        self::assertArrayNotHasKey('unicode', $GLOBALS);
-        self::assertFalse(defined('K_RLE'));
+    public function testInvalidDirectionIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        Bidi::toVisual('text', 'sideways');
+    }
+
+    public function testNonStringArrayEntryIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        Bidi::toVisual(['valid', 123]);
     }
 }

@@ -4,30 +4,41 @@ declare(strict_types=1);
 
 namespace Hussein\Bidirection;
 
-use Hussein\Bidirection\Contracts\BidiEngine;
-use Hussein\Bidirection\Engine\LegacyBidiEngine;
+use Hussein\Bidirection\Engine\UnicodeBidiEngine;
 use InvalidArgumentException;
 
 /**
- * Public API for converting logical text into visual order.
+ * Public entry point for logical-to-visual conversion.
  *
- * Only use visual conversion for rendering targets that do not implement
- * Unicode BiDi themselves (for example, some bitmap-image text APIs).
+ * Use this only for output targets that do not implement Unicode BiDi
+ * themselves (for example, some legacy image or PDF drawing APIs).
  */
 final class Bidi
 {
-    private static ?BidiEngine $engine = null;
-
     private function __construct()
     {
     }
 
-    public static function toVisual(string|array $text, bool|string $forceRtl = false): string|array
-    {
-        $engine = self::engine();
+    /**
+     * Convert a string or a list of independent lines into visual order.
+     *
+     * Array items are processed as independent paragraphs and returned as a
+     * numerically indexed list. For text laid out as one mixed-direction
+     * paragraph, convert the complete paragraph rather than each display line.
+     *
+     * @param string|array<array-key, string> $text
+     * @return string|list<string>
+     */
+    public static function toVisual(
+        string|array $text,
+        Direction|string $direction = Direction::Auto,
+        bool $shapeArabic = true
+    ): string|array {
+        $baseDirection = Direction::normalize($direction);
+        $engine = new UnicodeBidiEngine();
 
         if (is_string($text)) {
-            return $engine->toVisual($text, $forceRtl);
+            return $engine->toVisual($text, $baseDirection, $shapeArabic);
         }
 
         $result = [];
@@ -40,28 +51,9 @@ final class Bidi
                 ));
             }
 
-            // Preserve the historical behavior of returning a numerically
-            // indexed list for array input.
-            $result[] = $engine->toVisual($line, $forceRtl);
+            $result[] = $engine->toVisual($line, $baseDirection, $shapeArabic);
         }
 
         return $result;
-    }
-
-    /**
-     * Inject an engine, primarily for testing and application-specific engines.
-     */
-    public static function useEngine(?BidiEngine $engine): void
-    {
-        self::$engine = $engine;
-    }
-
-    private static function engine(): BidiEngine
-    {
-        if (self::$engine === null) {
-            self::$engine = new LegacyBidiEngine();
-        }
-
-        return self::$engine;
     }
 }

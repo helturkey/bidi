@@ -8,9 +8,10 @@ use Hussein\Bidirection\Support\Unicode;
 use InvalidArgumentException;
 
 /**
- * Unicode-aware wrapping for text rendered by character-counting APIs.
+ * Width-based wrapping for logical text.
  *
- * Width is measured in grapheme clusters, not terminal columns or font pixels.
+ * Width is measured in extended grapheme clusters, not terminal columns or
+ * rendered pixels. This class does not perform BiDi reordering.
  */
 final class TextLayout
 {
@@ -38,17 +39,22 @@ final class TextLayout
             return '';
         }
 
-        $paragraphs = explode("\n", str_replace(["\r\n", "\r"], "\n", $text));
+        $normalized = str_replace(["\r\n", "\r"], "\n", $text);
+        $paragraphs = explode("\n", $normalized);
         $wrapped = [];
 
         foreach ($paragraphs as $paragraph) {
-            $wrapped = array_merge($wrapped, self::wrapParagraph($paragraph, $width, $cut));
+            foreach (self::wrapParagraph($paragraph, $width, $cut) as $line) {
+                $wrapped[] = $line;
+            }
         }
 
         return implode($break, $wrapped);
     }
 
-    /** @return list<string> */
+    /**
+     * @return list<string>
+     */
     private static function wrapParagraph(string $paragraph, int $width, bool $cut): array
     {
         $clusters = Unicode::graphemes($paragraph);
@@ -57,49 +63,43 @@ final class TextLayout
         }
 
         $lines = [];
+
         while (count($clusters) > $width) {
-            $window = array_slice($clusters, 0, $width);
             $breakAt = null;
 
-            for ($i = count($window) - 1; $i >= 0; --$i) {
-                if (preg_match('/^\s$/u', $window[$i]) === 1) {
+            for ($i = $width - 1; $i >= 1; --$i) {
+                if (self::isWhitespace($clusters[$i])) {
                     $breakAt = $i;
                     break;
                 }
             }
 
-            if ($breakAt !== null && $breakAt > 0) {
+            if ($breakAt !== null) {
                 $lines[] = implode('', array_slice($clusters, 0, $breakAt));
                 $clusters = array_slice($clusters, $breakAt + 1);
-
-                while ($clusters !== [] && preg_match('/^\s$/u', $clusters[0]) === 1) {
-                    array_shift($clusters);
-                }
-
+                $clusters = self::dropLeadingWhitespace($clusters);
                 continue;
             }
 
             if (!$cut) {
-                $nextSpace = null;
+                $nextWhitespace = null;
                 for ($i = $width; $i < count($clusters); ++$i) {
-                    if (preg_match('/^\s$/u', $clusters[$i]) === 1) {
-                        $nextSpace = $i;
+                    if (self::isWhitespace($clusters[$i])) {
+                        $nextWhitespace = $i;
                         break;
                     }
                 }
 
-                if ($nextSpace !== null) {
-                    $lines[] = implode('', array_slice($clusters, 0, $nextSpace));
-                    $clusters = array_slice($clusters, $nextSpace + 1);
-
-                    while ($clusters !== [] && preg_match('/^\s$/u', $clusters[0]) === 1) {
-                        array_shift($clusters);
-                    }
-
+                if ($nextWhitespace !== null) {
+                    $lines[] = implode('', array_slice($clusters, 0, $nextWhitespace));
+                    $clusters = array_slice($clusters, $nextWhitespace + 1);
+                    $clusters = self::dropLeadingWhitespace($clusters);
                     continue;
                 }
 
-                return array_merge($lines, [implode('', $clusters)]);
+                // Keep an unbreakable word intact when cut=false, even if it
+                // makes this line longer than width.
+                return [...$lines, implode('', $clusters)];
             }
 
             $lines[] = implode('', array_slice($clusters, 0, $width));
@@ -109,5 +109,23 @@ final class TextLayout
         $lines[] = implode('', $clusters);
 
         return $lines;
+    }
+
+    private static function isWhitespace(string $cluster): bool
+    {
+        return preg_match('/^\s+$/u', $cluster) === 1;
+    }
+
+    /**
+     * @param list<string> $clusters
+     * @return list<string>
+     */
+    private static function dropLeadingWhitespace(array $clusters): array
+    {
+        while ($clusters !== [] && self::isWhitespace($clusters[0])) {
+            array_shift($clusters);
+        }
+
+        return $clusters;
     }
 }

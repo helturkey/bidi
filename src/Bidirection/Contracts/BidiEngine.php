@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Hussein\Bidirection\Contracts;
 
+use Hussein\Bidirection\Direction;
+
 /**
- * Converts a logical Unicode string into the visual order expected by a
- * rendering target that cannot perform the Unicode Bidirectional Algorithm.
+ * Converts logical Unicode text for renderers without native BiDi support.
  */
 interface BidiEngine
 {
-    /**
-     * @param bool|string $forceRtl Legacy direction override passed to the engine.
-     */
-    public function toVisual(string $text, bool|string $forceRtl = false): string;
+    public function toVisual(
+        string $text,
+        Direction $direction = Direction::Auto,
+        bool $shapeArabic = true
+    ): string;
 }
