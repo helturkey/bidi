@@ -25,7 +25,7 @@ final class UnicodeDataTest extends TestCase
             foreach ($ranges as [$start, $end, $property]) {
                 self::assertGreaterThanOrEqual(0, $start);
                 self::assertLessThanOrEqual(0x10FFFF, $end);
-                self::assertLessThanOrEqual($start, $end);
+                self::assertGreaterThanOrEqual($start, $end);
                 self::assertGreaterThan($previousEnd, $start);
                 self::assertNotSame('', $property);
                 $previousEnd = $end;

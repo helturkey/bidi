@@ -96,7 +96,7 @@ final class BidiTest extends TestCase
 
     public function testParagraphSeparatorsArePreserved(): void
     {
-        self::assertSame("hello\nعالم", Bidi::toVisual("hello\nعالم", Direction::Auto, false));
+        self::assertSame("hello\nملاع", Bidi::toVisual("hello\nعالم", Direction::Auto, false));
     }
 
     public function testReorderLineUsesResolvedLevelsForArabicCharacters(): void
