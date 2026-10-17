@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Hussein\Bidirection\Contracts;
 
+use Hussein\Bidirection\BidiAnalysis;
 use Hussein\Bidirection\Direction;
 
-/**
- * Converts logical Unicode text for renderers without native BiDi support.
- */
 interface BidiEngine
 {
     public function toVisual(
@@ -16,4 +14,16 @@ interface BidiEngine
         Direction $direction = Direction::Auto,
         bool $shapeArabic = true
     ): string;
+
+    public function analyze(
+        string $text,
+        Direction $direction = Direction::Auto,
+        bool $shapeArabic = true
+    ): BidiAnalysis;
+
+    /**
+     * @param list<int> $codePoints
+     * @param list<int> $levels
+     */
+    public function reorderLine(array $codePoints, array $levels, int $paragraphLevel): string;
 }
