@@ -20,6 +20,38 @@ final class Bidi
     }
 
     /**
+     * Analyze logical text without visually reordering it.
+     */
+    public static function analyze(
+        string $text,
+        Direction|string $direction = Direction::Auto,
+        bool $shapeArabic = true
+    ): BidiAnalysis {
+        return (new UnicodeBidiEngine())->analyze(
+            $text,
+            Direction::normalize($direction),
+            $shapeArabic
+        );
+    }
+
+    /**
+     * Reorder one logical line using levels resolved for its complete paragraph.
+     *
+     * The caller must break the paragraph first and pass the corresponding
+     * code-point and level slices. Paragraph level is 0 for LTR or 1 for RTL.
+     *
+     * @param list<int> $codePoints
+     * @param list<int> $levels
+     */
+    public static function reorderLine(
+        array $codePoints,
+        array $levels,
+        int $paragraphLevel
+    ): string {
+        return (new UnicodeBidiEngine())->reorderLine($codePoints, $levels, $paragraphLevel);
+    }
+
+    /**
      * Convert a string or a list of independent lines into visual order.
      *
      * Array items are processed as independent paragraphs and returned as a
