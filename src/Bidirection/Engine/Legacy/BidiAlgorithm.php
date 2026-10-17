@@ -1,6 +1,13 @@
 <?php
 
-class Bidi
+declare(strict_types=1);
+
+namespace Hussein\Bidirection\Engine\Legacy;
+
+use Hussein\Bidirection\Data\BidiControl;
+use Hussein\Bidirection\Data\UnicodeData;
+
+class BidiAlgorithm
 {
     /**
      * @param $c
@@ -130,9 +137,15 @@ class Bidi
         // $ta = array_map(fn(int $value) => $value === 160 ? 32 : $value, $ta);
         // solved by passing CS to Arabic
 
-        global $unicode, $unicode_mirror, $unicode_arlet, $laa_array, $diacritics, $endedletter, $alfletter, $punctuation;
-
-        require_once('unicode_data.php');
+        $tables = UnicodeData::tables();
+        $unicode = $tables['bidiClass'];
+        $unicode_mirror = $tables['mirrored'];
+        $unicode_arlet = $tables['arabicForms'];
+        $laa_array = $tables['lamAlefForms'];
+        $diacritics = $tables['diacritics'];
+        $endedletter = $tables['nonJoiningBefore'];
+        $alfletter = $tables['alefLetters'];
+        $punctuation = $tables['punctuation'];
 
         // paragraph embedding level
         $pel = 0;
@@ -179,74 +192,72 @@ class Bidi
         // X1. Begin by setting the current embedding level to the paragraph embedding level. Set the directional override status to neutral. Process each character iteratively, applying rules X2 through X9. Only embedding levels from 0 to 61 are valid in this phase.
         // 	In the resolution of levels in rules I1 and I2, the maximum embedding level of 62 can be reached.
         for ($i = 0; $i < $numchars; $i++) {
-            if ($ta[$i] == K_RLE) {
+            if ($ta[$i] == BidiControl::RLE) {
                 // X2. With each RLE, compute the least greater odd embedding level.
                 //	a. If this new level would be valid, then this embedding code is valid. Remember (push) the current embedding level and override status. Reset the current level to this new level, and reset the override status to neutral.
                 //	b. If the new level would not be valid, then this code is invalid. Do not change the current level or override status.
                 $next_level = $cel + ($cel % 2) + 1;
                 if ($next_level < 62) {
-                    $remember[] = array('num' => K_RLE, 'cel' => $cel, 'dos' => $dos);
+                    $remember[] = array('num' => BidiControl::RLE, 'cel' => $cel, 'dos' => $dos);
                     $cel = $next_level;
                     $dos = 'N';
                     $sor = $eor;
                     $eor = $cel % 2 ? 'R' : 'L';
                 }
-            } elseif ($ta[$i] == K_LRE) {
+            } elseif ($ta[$i] == BidiControl::LRE) {
                 // X3. With each LRE, compute the least greater even embedding level.
                 //	a. If this new level would be valid, then this embedding code is valid. Remember (push) the current embedding level and override status. Reset the current level to this new level, and reset the override status to neutral.
                 //	b. If the new level would not be valid, then this code is invalid. Do not change the current level or override status.
                 $next_level = $cel + 2 - ($cel % 2);
                 if ($next_level < 62) {
-                    $remember[] = array('num' => K_LRE, 'cel' => $cel, 'dos' => $dos);
+                    $remember[] = array('num' => BidiControl::LRE, 'cel' => $cel, 'dos' => $dos);
                     $cel = $next_level;
                     $dos = 'N';
                     $sor = $eor;
                     $eor = $cel % 2 ? 'R' : 'L';
                 }
-            } elseif ($ta[$i] == K_RLO) {
+            } elseif ($ta[$i] == BidiControl::RLO) {
                 // X4. With each RLO, compute the least greater odd embedding level.
                 //	a. If this new level would be valid, then this embedding code is valid. Remember (push) the current embedding level and override status. Reset the current level to this new level, and reset the override status to right-to-left.
                 //	b. If the new level would not be valid, then this code is invalid. Do not change the current level or override status.
                 $next_level = $cel + ($cel % 2) + 1;
                 if ($next_level < 62) {
-                    $remember[] = array('num' => K_RLO, 'cel' => $cel, 'dos' => $dos);
+                    $remember[] = array('num' => BidiControl::RLO, 'cel' => $cel, 'dos' => $dos);
                     $cel = $next_level;
                     $dos = 'R';
                     $sor = $eor;
                     $eor = $cel % 2 ? 'R' : 'L';
                 }
-            } elseif ($ta[$i] == K_LRO) {
+            } elseif ($ta[$i] == BidiControl::LRO) {
                 // X5. With each LRO, compute the least greater even embedding level.
                 //	a. If this new level would be valid, then this embedding code is valid. Remember (push) the current embedding level and override status. Reset the current level to this new level, and reset the override status to left-to-right.
                 //	b. If the new level would not be valid, then this code is invalid. Do not change the current level or override status.
                 $next_level = $cel + 2 - ($cel % 2);
                 if ($next_level < 62) {
-                    $remember[] = array('num' => K_LRO, 'cel' => $cel, 'dos' => $dos);
+                    $remember[] = array('num' => BidiControl::LRO, 'cel' => $cel, 'dos' => $dos);
                     $cel = $next_level;
                     $dos = 'L';
                     $sor = $eor;
                     $eor = $cel % 2 ? 'R' : 'L';
                 }
-            } elseif ($ta[$i] == K_PDF) {
+            } elseif ($ta[$i] == BidiControl::PDF) {
                 // X7. With each PDF, determine the matching embedding or override code. If there was a valid matching code, restore (pop) the last remembered (pushed) embedding level and directional override.
                 if (count($remember)) {
                     $last = count($remember) - 1;
-                    if (($remember[$last]['num'] == K_RLE) or
-                        ($remember[$last]['num'] == K_LRE) or
-                        ($remember[$last]['num'] == K_RLO) or
-                        ($remember[$last]['num'] == K_LRO)) {
-                        $match = array_pop($remember);
-                        $cel = $match['cel'];
-                        $dos = $match['dos'];
-                        $sor = $eor;
-                        $eor = ($cel > $match['cel'] ? $cel : $match['cel']) % 2 ? 'R' : 'L';
-                    }
+                    // Only explicit embedding and override controls are pushed
+                    // onto this stack, so a non-empty stack always has a
+                    // matching entry for PDF to pop.
+                    $match = array_pop($remember);
+                    $cel = $match['cel'];
+                    $dos = $match['dos'];
+                    $sor = $eor;
+                    $eor = $cel % 2 ? 'R' : 'L';
                 }
-            } elseif (($ta[$i] != K_RLE) and
-                ($ta[$i] != K_LRE) and
-                ($ta[$i] != K_RLO) and
-                ($ta[$i] != K_LRO) and
-                ($ta[$i] != K_PDF)) {
+            } elseif (($ta[$i] != BidiControl::RLE) and
+                ($ta[$i] != BidiControl::LRE) and
+                ($ta[$i] != BidiControl::RLO) and
+                ($ta[$i] != BidiControl::LRO) and
+                ($ta[$i] != BidiControl::PDF)) {
                 // X6. For all types besides RLE, LRE, RLO, LRO, and PDF:
                 //	a. Set the level of the current character to the current embedding level.
                 //	b. Whenever the directional override status is not neutral, reset the current character type to the directional override status.
@@ -421,7 +432,7 @@ class Bidi
                 if (($chardata[$i]['type'] == 'N') and ($chardata[$i]['sor'] == 'L') and ($chardata[($i + 1)]['type'] == 'L')) {
                     $chardata[$i]['type'] = 'L';
                 } elseif (($chardata[$i]['type'] == 'N') and
-                    (($chardata[$i]['sor'] == 'R') or ($chardata[$i]['sor'] == 'EN') or ($chardata[$i]['sor'] == 'AN')) and
+                    ($chardata[$i]['sor'] == 'R') and
                     (($chardata[($i + 1)]['type'] == 'R') or ($chardata[($i + 1)]['type'] == 'EN') or ($chardata[($i + 1)]['type'] == 'AN'))) {
                     $chardata[$i]['type'] = 'R';
                 } elseif ($chardata[$i]['type'] == 'N') {
@@ -434,7 +445,7 @@ class Bidi
                     $chardata[$i]['type'] = 'L';
                 } elseif (($chardata[$i]['type'] == 'N') and
                     (($chardata[($i - 1)]['type'] == 'R') or ($chardata[($i - 1)]['type'] == 'EN') or ($chardata[($i - 1)]['type'] == 'AN')) and
-                    (($chardata[$i]['eor'] == 'R') or ($chardata[$i]['eor'] == 'EN') or ($chardata[$i]['eor'] == 'AN'))) {
+                    ($chardata[$i]['eor'] == 'R')) {
                     $chardata[$i]['type'] = 'R';
                 } elseif ($chardata[$i]['type'] == 'N') {
                     // N2. Any remaining neutrals take the embedding direction
@@ -493,188 +504,18 @@ class Bidi
             }
         }
 
-        // Arabic Shaping
-        // Cursively connected scripts, such as Arabic or Syriac, require the selection of positional character shapes that depend on adjacent characters. Shaping is logically applied after the Bidirectional Algorithm is used and is limited to characters within the same directional run.
-//        $endedletter = array(1569, 1570, 1571, 1572, 1573, 1575, 1577, 1583, 1584, 1585, 1586, 1608, 1688);
-//        $alfletter = array(1570, 1571, 1573, 1575);
-        $chardata2 = $chardata;
-        $laaletter = false;
-        $charAL = array();
-        $x = 0;
-        for ($i = 0; $i < $numchars; $i++) {
-            if (($unicode[$chardata[$i]['char']] == 'AL') or ($unicode[$chardata[$i]['char']] == 'WS') || ($unicode[$chardata[$i]['char']] == 'CS')) {
-                $charAL[$x] = $chardata[$i];
-                $charAL[$x]['i'] = $i;
-                $chardata[$i]['x'] = $x;
-                $x++;
-            }
-        }
-        $numAL = $x;
-
-        for ($i = 0; $i < $numchars; $i++) {
-            $thischar = $chardata[$i];
-            if ($i > 0) {
-                $prevchar = $chardata[($i - 1)];
-            } else {
-                $prevchar = false;
-            }
-            if (($i + 1) < $numchars) {
-                $nextchar = $chardata[($i + 1)];
-            } else {
-                $nextchar = false;
-            }
-
-            if ($unicode[$thischar['char']] == 'AL') {
-                $x = $thischar['x'];
-                if ($x > 0) {
-                    $prevchar = $charAL[($x - 1)];
-                } else {
-                    $prevchar = false;
-                }
-                if (($x + 1) < $numAL) {
-                    $nextchar = $charAL[($x + 1)];
-                } else {
-                    $nextchar = false;
-                }
-                // if laa letter
-                if (($prevchar !== false) and ($prevchar['char'] == 1604) and (in_array($thischar['char'], $alfletter))) {
-                    $arabicarr = $laa_array;
-                    $laaletter = true;
-                    if ($x > 1) {
-                        $prevchar = $charAL[($x - 2)];
-                    } else {
-                        $prevchar = false;
-                    }
-                } else {
-                    $arabicarr = $unicode_arlet;
-                    $laaletter = false;
-                }
-
-                if (($prevchar !== false) and ($nextchar !== false) and
-                    (($unicode[$prevchar['char']] == 'AL') or ($unicode[$prevchar['char']] == 'NSM')) and
-                    (($unicode[$nextchar['char']] == 'AL') or ($unicode[$nextchar['char']] == 'NSM')) and
-                    ($prevchar['type'] == $thischar['type']) and
-                    ($nextchar['type'] == $thischar['type']) and
-                    ($nextchar['char'] != 1567)) {
-
-                    if ((in_array($prevchar['char'], $punctuation) && isset($arabicarr[$thischar['char']][2]))) {
-                        // solve handling charackter with previous punctuation as a middle charackter
-                        // should handel as end char. if isset
-                        $chardata2[$i]['char'] = $arabicarr[$thischar['char']][2];
-                    } else if ((in_array($nextchar['char'], $punctuation) && isset($arabicarr[$thischar['char']][1])) || ($nextchar['char'] === 1569 && $thischar['char'] === 1610)) {
-                        // 1569 hamza 1610 ي
-                        // end if next punctuations
-                        // for example شيء
-                        $chardata2[$i]['char'] = $arabicarr[$thischar['char']][1];
-                    } else if (in_array($prevchar['char'], $endedletter)) {
-                        if (isset($arabicarr[$thischar['char']][2])) {
-                            // initial
-                            $chardata2[$i]['char'] = $arabicarr[$thischar['char']][2];
-                        }
-                    } else {
-                        if (isset($arabicarr[$thischar['char']][3])) {
-                            // medial
-                            $chardata2[$i]['char'] = $arabicarr[$thischar['char']][3];
-                        }
-                    }
-                } elseif (($nextchar !== false) and
-                    (($unicode[$nextchar['char']] == 'AL') or ($unicode[$nextchar['char']] == 'NSM')) and
-                    ($nextchar['type'] == $thischar['type']) and
-                    ($nextchar['char'] != 1567)) {
-                    if (isset($arabicarr[$chardata[$i]['char']][2])) {
-                        // initial
-                        $chardata2[$i]['char'] = $arabicarr[$thischar['char']][2];
-                    }
-                } elseif ((($prevchar !== false) and
-                        (($unicode[$prevchar['char']] == 'AL') or ($unicode[$prevchar['char']] == 'NSM')) and
-                        ($prevchar['type'] == $thischar['type'])) or
-                    (($nextchar !== false) and ($nextchar['char'] == 1567))) {
-                    // final
-                    if (($i > 1) and ($thischar['char'] == 1607) and
-                        ($chardata[$i - 1]['char'] == 1604) and
-                        ($chardata[$i - 2]['char'] == 1604) and (isset($chardata[$i - 3]['char']) && $chardata[$i - 3]['char'] == 1575)) {
-                        //Allah Word
-                        // mark characters to delete with false
-                        // solve 2 ا alef in writing الله
-                        $chardata2[$i - 3]['char'] = false;
-
-                        $chardata2[$i - 2]['char'] = false;
-                        $chardata2[$i - 1]['char'] = false;
-                        $chardata2[$i]['char'] = 65010;
-                    } else {
-                        if (($prevchar !== false) and in_array($prevchar['char'], $endedletter)) {
-                            if (isset($arabicarr[$thischar['char']][0])) {
-                                // isolated
-                                $chardata2[$i]['char'] = $arabicarr[$thischar['char']][0];
-                            }
-                        } else {
-                            if (isset($arabicarr[$thischar['char']][1])) {
-                                // final
-                                $chardata2[$i]['char'] = $arabicarr[$thischar['char']][1];
-                            }
-                        }
-                    }
-                } elseif (isset($arabicarr[$thischar['char']][0])) {
-                    // isolated
-                    $chardata2[$i]['char'] = $arabicarr[$thischar['char']][0];
-                }
-                // if laa letter
-                if ($laaletter) {
-                    // mark characters to delete with false
-                    $chardata2[($charAL[($x - 1)]['i'])]['char'] = false;
-                }
-            } // end if AL (Arabic Letter)
-        } // end for each char
-
-        // remove marked characters
-        foreach ($chardata2 as $key => $value) {
-            if ($value['char'] === false) {
-                unset($chardata2[$key]);
-            }
-        }
-        $chardata = array_values($chardata2);
+        $chardata = ArabicShaper::shape(
+            $chardata,
+            $unicode,
+            $unicode_arlet,
+            $laa_array,
+            $endedletter,
+            $alfletter,
+            $punctuation
+        );
         $numchars = count($chardata);
-        unset($chardata2);
-        unset($arabicarr);
-        unset($laaletter);
-        unset($charAL);
 
-        // L2. From the highest level found in the text to the lowest odd level on each line, including intermediate levels not actually present in the text, reverse any contiguous sequence of characters that are at that level or higher.
-        for ($j = $maxlevel; $j > 0; $j--) {
-            $ordarray = array();
-            $revarr = array();
-            $onlevel = false;
-            for ($i = 0; $i < $numchars; $i++) {
-                if ($chardata[$i]['level'] >= $j) {
-                    $onlevel = true;
-                    if (isset($unicode_mirror[$chardata[$i]['char']])) {
-                        // L4. A character is depicted by a mirrored glyph if and only if (a) the resolved directionality of that character is R, and (b) the Bidi_Mirrored property value of that character is true.
-                        $chardata[$i]['char'] = $unicode_mirror[$chardata[$i]['char']];
-                    }
-                    $revarr[] = $chardata[$i];
-                } else {
-                    if ($onlevel) {
-                        $revarr = array_reverse($revarr);
-                        $ordarray = array_merge($ordarray, $revarr);
-                        $revarr = array();
-                        $onlevel = false;
-                    }
-                    $ordarray[] = $chardata[$i];
-                }
-            }
-            if ($onlevel) {
-                $revarr = array_reverse($revarr);
-                $ordarray = array_merge($ordarray, $revarr);
-            }
-            $chardata = $ordarray;
-        }
-
-        $ordarray = array();
-        for ($i = 0; $i < $numchars; $i++) {
-            $ordarray[] = $chardata[$i]['char'];
-        }
-
-        return $ordarray;
+        return VisualOrder::reorder($chardata, $unicode_mirror, $maxlevel);
     }
 }
 
