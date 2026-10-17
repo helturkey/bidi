@@ -35,7 +35,7 @@ final class Unicode
     {
         $out='';
         foreach ($points as $cp) {
-            if (!is_int($cp)||$cp<0||$cp>0x10FFFF||($cp>=0xD800&&$cp<=0xDFFF)) throw new InvalidArgumentException('Invalid Unicode scalar value.');
+            if ($cp<0||$cp>0x10FFFF||($cp>=0xD800&&$cp<=0xDFFF)) throw new InvalidArgumentException('Invalid Unicode scalar value.');
             if ($cp<0x80) $out.=chr($cp);
             elseif ($cp<0x800) $out.=chr(0xC0|($cp>>6)).chr(0x80|($cp&63));
             elseif ($cp<0x10000) $out.=chr(0xE0|($cp>>12)).chr(0x80|(($cp>>6)&63)).chr(0x80|($cp&63));

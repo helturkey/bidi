@@ -28,7 +28,10 @@ final class ArabicShaper
         0x06CC=>[0xFBFC,0xFBFD,0xFBFE,0xFBFF],
     ];
 
-    /** @param list<int> $points @return list<int> */
+    /**
+     * @param list<int> $points
+     * @return list<int>
+     */
     public static function shape(array $points): array
     {
         $out=$points;

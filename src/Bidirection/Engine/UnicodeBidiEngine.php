@@ -35,7 +35,7 @@ final class UnicodeBidiEngine implements BidiEngine
             $end = $start;
             while ($end < $n && self::type($points[$end]) !== 'B') { ++$end; }
             $part = array_slice($points, $start, $end - $start);
-            [$vp, $lp, $lev, $base] = $this->paragraph($part, $direction);
+            [$vp, $lp, $lev, $base] = $this->paragraph($part, $direction, $shapeArabic);
             array_push($visual, ...$vp);
             array_push($logical, ...$lp);
             array_push($levelsOut, ...$lev);
@@ -45,7 +45,6 @@ final class UnicodeBidiEngine implements BidiEngine
                 $levelsOut[] = 0; $paragraphs[] = 0; $start = $end + 1;
             } else { $start = $n; }
         }
-        if ($shapeArabic) { $visual = ArabicShaper::shape($visual); }
         return new BidiAnalysis($logical, $levelsOut, $paragraphs, Unicode::fromCodePoints($visual));
     }
 
@@ -198,7 +197,8 @@ final class UnicodeBidiEngine implements BidiEngine
             }
         }
 
-        [$visual,$visualLevels]=self::reorderPairs($p,$l,$base);
+        $visualPoints = $shapeArabic ? ArabicShaper::shape($p) : $p;
+        [$visual,$visualLevels]=self::reorderPairs($visualPoints,$l,$base);
         foreach ($visual as $i=>$cp) { if ($visualLevels[$i]%2===1) { $visual[$i]=UnicodeData::MIRRORING[$cp]??$cp; } }
         return [$visual,$p,$l,$base];
     }
@@ -226,8 +226,12 @@ final class UnicodeBidiEngine implements BidiEngine
         return in_array($type,['L','R'],true)?$type:'ON';
     }
 
-    /** @param list<int> $points @param list<int> $levels @return array{list<int>,list<int>} */
-    private static function reorderPairs(array $points,array $levels,int $base): array
+    /**
+     * @param list<int> $points
+     * @param list<int> $levels
+     * @return array{list<int>, list<int>}
+     */
+    private static function reorderPairs(array $points, array $levels, int $base): array
     {
         $max=$levels===[]?$base:max($levels); $odd=array_values(array_filter($levels,static fn(int $x):bool=>$x%2===1));
         if ($odd===[]) return [$points,$levels];

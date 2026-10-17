@@ -11,7 +11,11 @@ use OutOfBoundsException;
 /** Immutable analysis result in logical code-point order. */
 final readonly class BidiAnalysis
 {
-    /** @param list<int> $codePoints @param list<int> $levels @param list<int> $paragraphLevels */
+    /**
+     * @param list<int> $codePoints
+     * @param list<int> $levels
+     * @param list<int> $paragraphLevels
+     */
     public function __construct(
         public array $codePoints,
         public array $levels,
