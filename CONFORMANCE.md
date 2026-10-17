@@ -2,7 +2,7 @@
 
 ## BiDi engine
 
-This package delegates the Unicode Bidirectional Algorithm implementation and Arabic shaping to `tecnickcom/tc-lib-unicode`, constrained in Composer to stable release `^3.0.9`. The upstream project states that it verifies its implementation against the official Unicode `BidiTest.txt` and `BidiCharacterTest.txt` suites:
+This package delegates the Unicode Bidirectional Algorithm implementation and Arabic shaping to `tecnickcom/tc-lib-unicode`, constrained in Composer to stable release `^3.2.2`. The upstream project states that it verifies its implementation against the official Unicode `BidiTest.txt` and `BidiCharacterTest.txt` suites:
 
 - Upstream source and test information: https://github.com/tecnickcom/tc-lib-unicode
 - Unicode UAX #9: https://www.unicode.org/reports/tr9/

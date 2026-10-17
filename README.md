@@ -86,9 +86,19 @@ Wraps text based on Unicode grapheme clusters, not bytes or pixels. Existing par
 
 تقسّم النص اعتمادًا على وحدات المحارف المركبة، وليس البايتات أو البكسلات. تُحافظ على فواصل الفقرات الحالية ويُوحّد CRLF وCR إلى LF.
 
+### Paragraph analysis and line reordering
+
+For renderers that choose their own line breaks, analyze the full logical paragraph first, break it using the renderer's line layout, then reorder each line using the matching code-point and level slices:
+
+    $analysis = Bidi::analyze($logicalParagraph, Direction::Rtl);
+    // After the renderer chooses line boundaries:
+    $visualLine = Bidi::reorderLine($lineCodePoints, $lineLevels, $paragraphLevel);
+
+BidiAnalysis exposes codePoints, levels, and paragraphLevels aligned by code point, plus logicalText() and paragraphLevelAt(). The caller is responsible for mapping line boundaries back to analyzed code-point offsets. Do not wrap a paragraph first and analyze each fragment independently if the fragments belong to one paragraph.
+
 ## Unicode algorithm and limitations
 
-The algorithm is provided by `tecnickcom/tc-lib-unicode` version 3.0.9 or a compatible stable 3.x release. That project documents its BiDi engine as verified against the official `BidiTest.txt` and `BidiCharacterTest.txt` suites. The Unicode property data comes from `tecnickcom/tc-lib-unicode-data`; version 3.0.9 identifies Unicode Character Database 17.0.0.
+The algorithm is provided by `tecnickcom/tc-lib-unicode` version 3.2.2 or a compatible stable 3.x release. That project documents its BiDi engine as verified against the official `BidiTest.txt` and `BidiCharacterTest.txt` suites. The Unicode property data comes from `tecnickcom/tc-lib-unicode-data`; version 3.0.9 identifies Unicode Character Database 17.0.0.
 
 This package no longer maintains its own hand-written BiDi algorithm or generated Unicode tables. See [the upstream algorithm](https://github.com/tecnickcom/tc-lib-unicode) and [UAX #9](https://www.unicode.org/reports/tr9/) for algorithm scope.
 

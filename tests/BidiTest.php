@@ -86,4 +86,37 @@ final class BidiTest extends TestCase
         self::assertSame('', Bidi::toVisual(''));
     }
 
+    public function testAnalysisReturnsAlignedLogicalCodePointsAndLevels(): void
+    {
+        $analysis = Bidi::analyze('abc אבג', Direction::Ltr, false);
+
+        self::assertCount($analysis->count(), $analysis->levels);
+        self::assertCount($analysis->count(), $analysis->paragraphLevels);
+        self::assertSame('abc אבג', $analysis->logicalText());
+    }
+
+    public function testReordersLineUsingPrecomputedLevels(): void
+    {
+        self::assertSame(
+            'גבא',
+            Bidi::reorderLine([0x05D0, 0x05D1, 0x05D2], [1, 1, 1], 1)
+        );
+    }
+
+    public function testReorderLineRejectsMismatchedLevels(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        Bidi::reorderLine([0x05D0, 0x05D1], [1], 1);
+    }
+
+    public function testEmptyAnalysisIsWellDefined(): void
+    {
+        $analysis = Bidi::analyze('');
+
+        self::assertSame([], $analysis->codePoints);
+        self::assertSame([], $analysis->levels);
+        self::assertSame('', $analysis->logicalText());
+    }
+
 }
