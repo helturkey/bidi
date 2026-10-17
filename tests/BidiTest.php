@@ -77,4 +77,9 @@ final class BidiTest extends TestCase
 
         Bidi::toVisual(['valid', 123]);
     }
+    public function testEmptyStringRemainsEmpty(): void
+    {
+        self::assertSame('', Bidi::toVisual(''));
+    }
+
 }

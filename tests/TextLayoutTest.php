@@ -14,6 +14,11 @@ final class TextLayoutTest extends TestCase
         self::assertSame("hello\nworld", TextLayout::wrap('hello world', 5));
     }
 
+    public function testEmptyTextRemainsEmpty(): void
+    {
+        self::assertSame('', TextLayout::wrap('', 5));
+    }
+
     public function testCutCanSplitLongWords(): void
     {
         self::assertSame("abcdef\ngh", TextLayout::wrap('abcdefgh', 6, "\n", true));

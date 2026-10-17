@@ -38,7 +38,9 @@ final class Bidi
         $engine = new UnicodeBidiEngine();
 
         if (is_string($text)) {
-            return $engine->toVisual($text, $baseDirection, $shapeArabic);
+            return $text === ''
+                ? ''
+                : $engine->toVisual($text, $baseDirection, $shapeArabic);
         }
 
         $result = [];
@@ -51,7 +53,9 @@ final class Bidi
                 ));
             }
 
-            $result[] = $engine->toVisual($line, $baseDirection, $shapeArabic);
+            $result[] = $line === ''
+                ? ''
+                : $engine->toVisual($line, $baseDirection, $shapeArabic);
         }
 
         return $result;

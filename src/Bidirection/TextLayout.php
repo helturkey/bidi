@@ -68,7 +68,21 @@ final class TextLayout
             $breakAt = null;
 
             for ($i = $width - 1; $i >= 1; --$i) {
-                if (self::isWhitespace($clusters[$i])) {
+                if (!self::isWhitespace($clusters[$i])) {
+                    continue;
+                }
+
+                // Do not break a run of leading indentation as if it were a
+                // word separator; if necessary, cut the line at its width.
+                $hasContent = false;
+                for ($prefix = 0; $prefix < $i; ++$prefix) {
+                    if (!self::isWhitespace($clusters[$prefix])) {
+                        $hasContent = true;
+                        break;
+                    }
+                }
+
+                if ($hasContent) {
                     $breakAt = $i;
                     break;
                 }
