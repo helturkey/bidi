@@ -1,13 +1,7 @@
 {
     "name": "helturkey/bidi",
     "description": "Unicode bidirectional text processing for Arabic and mixed-direction PHP strings",
-    "keywords": [
-        "arabic",
-        "bidi",
-        "bidirectional",
-        "unicode",
-        "rtl"
-    ],
+    "keywords": ["arabic", "bidi", "bidirectional", "unicode", "rtl"],
     "homepage": "https://github.com/helturkey/bidi",
     "type": "library",
     "license": "MIT",
@@ -17,9 +11,7 @@
     "autoload": {
         "psr-4": {
             "Hussein\\": "src/"
-        },
-        "classmap": [],
-        "files": []
+        }
     },
     "autoload-dev": {
         "psr-4": {

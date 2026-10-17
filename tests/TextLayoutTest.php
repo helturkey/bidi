@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Hussein\Bidirection\Tests;
 
-use Hussein\Bidirection\ArabicUtf8;
 use Hussein\Bidirection\TextLayout;
 use PHPUnit\Framework\TestCase;
 
@@ -27,7 +26,7 @@ final class TextLayoutTest extends TestCase
 
     public function testPreservesExistingParagraphBreaks(): void
     {
-        self::assertSame("one\ntwo", ArabicUtf8::mb_wordwrap("one\ntwo", 75));
+        self::assertSame("one\ntwo", TextLayout::wrap("one\ntwo", 75));
     }
 
     public function testRejectsInvalidWidth(): void

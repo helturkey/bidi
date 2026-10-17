@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Hussein\Bidirection\Tests;
 
-use Hussein\Bidirection\ArabicUtf8;
 use Hussein\Bidirection\Bidi;
 use Hussein\Bidirection\Data\UnicodeData;
 use PHPUnit\Framework\TestCase;
@@ -18,12 +17,12 @@ final class BidiTest extends TestCase
 
     public function testAsciiTextCanBeConverted(): void
     {
-        self::assertSame('hello world', ArabicUtf8::convert('hello world'));
+        self::assertSame('hello world', Bidi::toVisual('hello world'));
     }
 
     public function testArrayInputReturnsArray(): void
     {
-        $result = ArabicUtf8::convert(['hello', 'world']);
+        $result = Bidi::toVisual(['hello', 'world']);
 
         self::assertSame(['hello', 'world'], $result);
     }
