@@ -1,46 +1,17 @@
 {
     "name": "helturkey/bidi",
-    "description": "Unicode bidirectional text processing and Arabic shaping for PHP renderers",
+    "description": "Unicode bidirectional text processing and Arabic shaping for PHP",
     "keywords": ["arabic", "bidi", "bidirectional", "unicode", "rtl", "text-layout"],
     "homepage": "https://github.com/helturkey/bidi",
     "type": "library",
     "license": "MIT",
-    "require": {
-        "php": "^8.2",
-        "ext-mbstring": "*",
-        "tecnickcom/tc-lib-unicode": "^3.2.2"
-    },
-    "autoload": {
-        "psr-4": {
-            "Hussein\\Bidirection\\": "src/Bidirection/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Hussein\\Bidirection\\Tests\\": "tests/"
-        }
-    },
-    "require-dev": {
-        "phpstan/phpstan": "^1.11 || ^2.0",
-        "phpunit/phpunit": "^11.5 || ^12.5 || ^13.0"
-    },
-    "scripts": {
-        "test": "phpunit",
-        "analyse": "phpstan analyse src --level=6",
-        "check": [
-            "@test",
-            "@analyse"
-        ]
-    },
-    "config": {
-        "sort-packages": true,
-        "allow-plugins": {}
-    },
+    "require": { "php": "^8.2", "ext-mbstring": "*" },
+    "autoload": { "psr-4": { "Hussein\\Bidirection\\": "src/Bidirection/" } },
+    "autoload-dev": { "psr-4": { "Hussein\\Bidirection\\Tests\\": "tests/" } },
+    "require-dev": { "phpstan/phpstan": "^1.11 || ^2.0", "phpunit/phpunit": "^11.5 || ^12.5 || ^13.0" },
+    "scripts": { "test": "phpunit", "analyse": "phpstan analyse src --level=6", "check": ["@test", "@analyse"] },
+    "config": { "sort-packages": true, "allow-plugins": {} },
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "extra": {
-        "branch-alias": {
-            "dev-main": "1.0.x-dev"
-        }
-    }
+    "extra": { "branch-alias": { "dev-main": "1.0.x-dev" } }
 }

@@ -1,21 +1,26 @@
-# Unicode conformance and dependency provenance
+# Unicode conformance and data provenance
 
-## BiDi engine
+## Engine
 
-This package delegates the Unicode Bidirectional Algorithm implementation and Arabic shaping to `tecnickcom/tc-lib-unicode`, constrained in Composer to stable release `^3.2.2`. The upstream project states that it verifies its implementation against the official Unicode `BidiTest.txt` and `BidiCharacterTest.txt` suites:
+The BiDi engine is implemented in this repository and does not use a third-party runtime library for Unicode bidirectional processing. Property data is generated from Unicode Character Database 18.0.0. The implementation covers explicit levels and overrides, weak and neutral resolution, paired brackets, implicit levels, whitespace resets, visual reordering, and mirroring.
 
-- Upstream source and test information: https://github.com/tecnickcom/tc-lib-unicode
-- Unicode UAX #9: https://www.unicode.org/reports/tr9/
-- Official Unicode test-data index: https://www.unicode.org/reports/tr41/
+## Validation status
 
-The associated character-property data package identifies Unicode Character Database 17.0.0 for release 3.0.9. The dependency contains the normative property tables and algorithm implementation; this repository does not duplicate or hand-edit those tables.
+The project has regression tests for the public API, mixed-direction text, isolates, brackets, numbers, Arabic shaping, UTF-8 validation, and wrapping. Full conformance against the official Unicode `BidiTest.txt` and `BidiCharacterTest.txt` suites has not yet been established. Do not treat this implementation as fully UAX #9 conformant until those suites are imported into CI and pass.
 
-## What this repository tests
+Official specification and test data:
+- https://www.unicode.org/reports/tr9/
+- https://www.unicode.org/Public/18.0.0/ucd/BidiTest.txt
+- https://www.unicode.org/Public/18.0.0/ucd/BidiCharacterTest.txt
 
-The project CI tests the public adapter, direction validation, UTF-8 rejection, maximum scalar acceptance, mixed-direction output, isolates, brackets/numbers, array input, and grapheme-aware wrapping across the supported PHP matrix.
+## Generated data
 
-These tests are integration/regression tests for this wrapper; they are not a copy of the full Unicode conformance datasets. The full UAX #9 conformance claim belongs to the upstream engine version and should be rechecked when upgrading that dependency.
+Run `php tools/generate-unicode-data.php /path/to/ucd` after obtaining the four documented Unicode 18.0.0 UCD files. Generated ranges are stored in `src/Bidirection/Data/UnicodeData.php`. See `UNICODE-LICENSE.md` for source links and attribution.
 
-## Known limits
+## Known limitations
 
-The upstream stable engine documents that L3 combining-mark display behavior is not implemented and that Arabic is the supported contextual-shaping script. This project records those limitations rather than claiming complete layout-engine behavior for all Unicode scripts. `TextLayout` does not resolve BiDi embedding levels and should not be used as a replacement for a renderer's paragraph/line layout process.
+- Full official conformance testing remains required.
+- Arabic shaping currently maps common Arabic/Persian letters to Unicode Presentation Forms; it is not OpenType shaping and does not cover all cursive scripts.
+- Rule L3 combining-mark display behavior and renderer-specific line breaking are not implemented as a complete layout pipeline.
+- `TextLayout` wraps logical text by grapheme clusters and does not perform paragraph layout.
+- Prefer native BiDi rendering in browsers and modern text engines; visual-order conversion is for legacy output targets.

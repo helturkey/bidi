@@ -12,7 +12,7 @@ Browsers, HTML and modern text engines already implement bidirectional rendering
 
 ## Features / المميزات
 
-- Unicode Bidirectional Algorithm processing and Arabic shaping are delegated to the maintained `tecnickcom/tc-lib-unicode` library.
+- Unicode Bidirectional Algorithm processing is implemented internally using generated Unicode Character Database property tables. Common Arabic contextual forms are handled by a separate internal shaper.
 - Explicit paragraph direction: auto, left-to-right, or right-to-left.
 - Optional Arabic contextual shaping for legacy renderers.
 - Safe UTF-8 validation at the public API boundary.
@@ -23,7 +23,7 @@ Browsers, HTML and modern text engines already implement bidirectional rendering
 
 - PHP 8.2 or later.
 - Composer.
-- The `mbstring` PHP extension (required by the Unicode engine).
+- The `mbstring` PHP extension (used for grapheme-aware wrapping).
 
 ## Installation / التثبيت
 
@@ -102,7 +102,7 @@ The algorithm is provided by `tecnickcom/tc-lib-unicode` version 3.2.2 or a comp
 
 This package no longer maintains its own hand-written BiDi algorithm or generated Unicode tables. See [the upstream algorithm](https://github.com/tecnickcom/tc-lib-unicode) and [UAX #9](https://www.unicode.org/reports/tr9/) for algorithm scope.
 
-Important limitations inherited from the selected stable engine:
+Current implementation scope and limitations:
 
 - Rule L3 (combining-mark display behavior) is not implemented by the upstream engine.
 - Contextual shaping is provided for Arabic, not every cursive script (such as Syriac, N'Ko, Mandaic and Adlam).
@@ -121,7 +121,7 @@ For production systems, test the actual output path with mixed Arabic/Latin runs
 
 ## Licensing
 
-This package's own source is MIT-licensed. The `tecnickcom/tc-lib-unicode` runtime dependency is LGPL-3.0-or-later and is installed separately by Composer. Distribution of applications using that dependency must comply with its license and applicable notice requirements; review the dependency's LICENSE file and the terms relevant to your distribution.
+The PHP implementation is MIT-licensed. Generated Unicode property tables are derived from the Unicode Character Database; see [UNICODE-LICENSE.md](UNICODE-LICENSE.md) for attribution and applicable Unicode terms.
 
 ## License
 

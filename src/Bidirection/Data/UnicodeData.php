@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Hussein\\Bidirection\\Data;
+namespace Hussein\Bidirection\Data;
 
 /**
  * Generated Unicode 18.0.0 property tables.
