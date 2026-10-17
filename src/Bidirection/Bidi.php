@@ -26,7 +26,7 @@ final class Bidi
      * numerically indexed list. For text laid out as one mixed-direction
      * paragraph, convert the complete paragraph rather than each display line.
      *
-     * @param string|array<array-key, string> $text
+     * @param string|array<array-key, mixed> $text
      * @return string|list<string>
      */
     public static function toVisual(
