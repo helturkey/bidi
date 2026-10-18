@@ -129,7 +129,7 @@ composer audit
 The suite includes exact visual-order regression cases, directional-level assertions, public-input validation, and generated-Unicode-table integrity checks. See [CONFORMANCE.md](CONFORMANCE.md) for the current conformance status.
 
 ## Source:
-This package started as part of the core qafya analysis work behind [موسوعة الشعراء](https://poetspedia.com), then became open source to help Arabic poetry developers, researchers, and linguists.
+This package started as part of the core behind [موسوعة الشعراء](https://poetspedia.com), then became open source to help Arabic poetry developers, researchers, and linguists.
 
 ## License
 
