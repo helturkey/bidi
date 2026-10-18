@@ -128,6 +128,9 @@ composer audit
 
 The suite includes exact visual-order regression cases, directional-level assertions, public-input validation, and generated-Unicode-table integrity checks. See [CONFORMANCE.md](CONFORMANCE.md) for the current conformance status.
 
+## Source:
+This package started as part of the core qafya analysis work behind [موسوعة الشعراء](https://poetspedia.com), then became open source to help Arabic poetry developers, researchers, and linguists.
+
 ## License
 
 The PHP implementation is MIT-licensed. Generated property tables derive from the Unicode Character Database; see [UNICODE-LICENSE.md](UNICODE-LICENSE.md) for attribution and terms.
